@@ -14,12 +14,9 @@ h1 {
 
 #playGround {
   /* 19*30px x 16*30px */
-  background-color: antiquewhite;
   height: 480px;
   width: 570px;
-  /*align-self: center;*/
   border: 1px solid black;
-  /*position: relative;*/
   margin: auto;
 }
 
@@ -35,26 +32,29 @@ h1 {
 }
 .W {
   /*W = Wall */
-  background-color: brown;
   background-image: url("./images/Wa1.png");
 }
 .N {
   /* N = standard floor */
-  background-color: burlywood;
   background-image: url("./images/Gr1.png");
 }
 .G {
   /* G = Goal area for the blocks */
-  background-color: green;
   background-image: url("./images/Fi1.png");
 }
 .B {
   /* B = Movable block */
-  background-color: aquamarine;
   background-image: url("./images/Kr1.png");
 }
-.P {
-  /* P = Player starting position */
-  background-color: red;
-  background-image: url("./images/Adv3.png");
+.G.P {
+  /* Background ang image for player */
+  background-image: url("./images/Man4.png"), url("./images/Fi1.png");
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+}
+.N.P {
+  /* Background ang image for player */
+  background-image: url("./images/Man4.png"), url("./images/Gr1.png");
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
 }
