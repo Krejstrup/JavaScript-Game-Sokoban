@@ -2,24 +2,12 @@
 let keyInputs = 0;
 let gameDone = false;
 
-function findDudeId(){      // NOTE: Y/X coordinates
-    // go through the <div id> and look for class=.P for dude.
-    // OR we maybe could have the Dude id.pos in global variable???
-    let playgroundElement = document.getElementById(String(0));
-    let attribString = playgroundElement.getAttribute("class");
-    let totalElements = tileMap01.height*tileMap01.width;
-    
-    for (let id=0; id<totalElements; id++){
-        playgroundElement = document.getElementById(String(id)); //fetch the new element
-        attribString = playgroundElement.getAttribute("class");
-        
-        if (attribString.includes("P")) return id;
-    }
-}
+// Create an event-listener for keys, and call keyPressed()
+document.addEventListener("keydown", keyPressed);
 
 // this is a startup function that initiates from the body - don't change!!
 function startUp(){
-    let gameField = tileMap01;  // Later game patch: get the game field from player select
+    // predefined: gameField = tileMap01 - In later game patch: get the game field from a player select
     const playgroundElement = document.getElementById("playGround");
     let marker = " ";
     // Id = "gameField" to be able to find an game element faster.
@@ -45,6 +33,7 @@ function startUp(){
                 newDivBox.classList.add(marker);
                 marker = "P";   // this is a moving player (P) element over floor
                 newDivBox.classList.add(marker);
+                playerPos = idTag;  // idTag for this gamer element will be saved here
             } else{
                 newDivBox.classList.add(marker);
             }
@@ -53,9 +42,6 @@ function startUp(){
         } 
     }
 }
-
-// Create an event-listener for keys, and call keyPressed()
-document.addEventListener("keydown", keyPressed);
 
 function movePlayer(dudePos,nextPos)    // tex Player start pos and up: (220,-19)
 {
@@ -75,6 +61,7 @@ function movePlayer(dudePos,nextPos)    // tex Player start pos and up: (220,-19
             playgroundElement.classList.add("P");
             playgroundElement = document.getElementById(dudePos);
             playgroundElement.classList.remove("P");
+            playerPos += nextPos;
             if (!gameDone) keyInputs++;
         }
     }else{
@@ -83,6 +70,7 @@ function movePlayer(dudePos,nextPos)    // tex Player start pos and up: (220,-19
         playgroundElement.classList.remove("P");
         playgroundElement = document.getElementById(dudePos+nextPos); // Set dude new P
         playgroundElement.classList.add("P");
+        playerPos += nextPos;
         if (!gameDone) keyInputs++;
     }
 }
@@ -91,7 +79,7 @@ function keyPressed(event)
 {
     event.preventDefault();
     //console.log(event);     // Visa eventet - vi är nyfikna!
-    let DudePos = findDudeId();  // Looks for <div id> for player
+    let DudePos = playerPos; // findDudeId();  // Looks for <div id> for player
     //console.log("KeyPress: FindDude: " + DudePos); // startPos: 220 = 19*11+11 (row 19, col 11)
     var playgroundElement = document.getElementById(0);
     let gameField = tileMap01;  // Later game patch: get the game field from player select
