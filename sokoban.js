@@ -1,4 +1,6 @@
 "use strict";
+let keyInputs = 0;
+let gameDone = false;
 
 function findDudeId(){      // NOTE: Y/X coordinates
     // go through the <div id> and look for class=.P for dude.
@@ -6,52 +8,27 @@ function findDudeId(){      // NOTE: Y/X coordinates
     let playgroundElement = document.getElementById(String(0));
     let attribString = playgroundElement.getAttribute("class");
     let totalElements = tileMap01.height*tileMap01.width;
-
+    
     for (let id=0; id<totalElements; id++){
         playgroundElement = document.getElementById(String(id)); //fetch the new element
         attribString = playgroundElement.getAttribute("class");
-        //console.log("FindDude : " + id + " getAttib: " + attribString); // test attrib types
-        if (attribString.includes("P")) return id; // (i*100+j); old version returned [x,y]
+        
+        if (attribString.includes("P")) return id;
     }
 }
 
-function reDrawMap(){       // NOTE: Y/X coordinates
-    let indexId = 0;        // use this as string!!
-    let playgroundElement = document.getElementById(String(indexId));
-    let marker = "";
-
-    // beslutade att jag inte ska använda MapArray som bas och uppdatera den
-    // visuells med den som utgågnspunkt. Ska se om jag kan använda den visuella
-    // och jobba med den. Tex spara ett par rutor fram (i rätt tiktning) och
-    // sen uppdatera Attributen efterhand. Skapa fyra nya function's för var riktning
-    // så blir case-satsen lättare att läsa!
-    for (let i=0; i<tileMap01.height; i++){
-        for (let j=0; j<tileMap01.width; j++){
-
-            //console.log("Y: " + i + " X: " + j +" :" + tileMap01.mapGrid[i][j]); // Lookie lookie
-            marker = tileMap01.mapGrid[i][j];
-            if (marker == " ") marker = "N"; // Make a empty floor square with N
-            //console.log(marker); // Lookie lookie
-            playgroundElement = document.getElementById(String(indexId));
-            playgroundElement.removeAttribute("class");      //Adds or updates value of a specified attribute
-            playgroundElement.setAttribute("class", ("box "+ marker)); // this is what we are here for!
-            indexId++;
-        } 
-    }
-}
-
-// this is a startup function that initiates grom the body - don't change!!
+// this is a startup function that initiates from the body - don't change!!
 function startUp(){
+    let gameField = tileMap01;  // Later game patch: get the game field from player select
     const playgroundElement = document.getElementById("playGround");
     let marker = " ";
     // Id = "gameField" to be able to find an game element faster.
     let idTag = 0;
-
-    for (let i=0; i<tileMap01.height; i++){
-        for (let j=0; j<tileMap01.width; j++){
-            //console.log(tileMap01.mapGrid[i][j]) ;
-            //console.log("i: " + i + " j: " + j );
-            marker = tileMap01.mapGrid[i][j];
+    
+    for (let i=0; i<gameField.height; i++){
+        for (let j=0; j<gameField.width; j++){
+            
+            marker = gameField.mapGrid[i][j];
             //console.log(marker);
             let newDivBox = document.createElement("div");
             newDivBox.classList.add("box");
@@ -59,14 +36,14 @@ function startUp(){
                 marker = "N";    // this is a floor tile
                 newDivBox.classList.add(marker);
             } else if (marker == "B") {
-                marker = "N";   // this is a moving element over floor
+                marker = "N";   // this is a moving element (B) over floor
                 newDivBox.classList.add(marker);
                 marker = "B";
                 newDivBox.classList.add(marker);
             } else if (marker == "P") {
                 marker = "N";
                 newDivBox.classList.add(marker);
-                marker = "P";   // this is a moving player element over floor
+                marker = "P";   // this is a moving player (P) element over floor
                 newDivBox.classList.add(marker);
             } else{
                 newDivBox.classList.add(marker);
@@ -80,122 +57,34 @@ function startUp(){
 // Create an event-listener for keys, and call keyPressed()
 document.addEventListener("keydown", keyPressed);
 
-function moveUp(dudePos){
-    // move has been previous checked
-    // to do: 1) check if we're movin a box
-    // 1a) if wall behind box do nothing
-    // 1b) add B attribute to next element
-    // 1c) delete the B attribute from B previous position
-    // 2) add P attribute from player to next pos
-    // 3) delete the P attribute from P previous position
-    console.log("Entered moveUp");
-    //console.log("Dude at: " + dudePos);
-
-    let playgroundElement = document.getElementById(dudePos-19); // Get one element ahead
+function movePlayer(dudePos,nextPos)    // tex Player start pos and up: (220,-19)
+{
+    let playgroundElement = document.getElementById(dudePos+nextPos); // Get one element ahead
     //console.log("Är det en Box framför? : " + playgroundElement.classList.contains("B"));
     
     if (playgroundElement.classList.contains("B"))
     {
-        playgroundElement = document.getElementById(dudePos-38); // Get two element ahead
+        playgroundElement = document.getElementById(dudePos+(2*nextPos)); // Get two element ahead
         //console.log("Är det Box? : " + playgroundElement.classList.contains("B"));
         if (!(playgroundElement.classList.contains("W") || playgroundElement.classList.contains("B")))
         {
             //ok, Box but no Wall - continue to move
             playgroundElement.classList.add("B");
-            playgroundElement = document.getElementById(dudePos-19);
+            playgroundElement = document.getElementById(dudePos+nextPos);
             playgroundElement.classList.remove("B");
             playgroundElement.classList.add("P");
             playgroundElement = document.getElementById(dudePos);
             playgroundElement.classList.remove("P");
+            if (!gameDone) keyInputs++;
         }
     }else{
    
         playgroundElement = document.getElementById(dudePos); // Get dudes div
         playgroundElement.classList.remove("P");
-        playgroundElement = document.getElementById(dudePos-19); // Set dude new P
+        playgroundElement = document.getElementById(dudePos+nextPos); // Set dude new P
         playgroundElement.classList.add("P");
+        if (!gameDone) keyInputs++;
     }
-}
-
-function moveDown(dudePos){
-    let playgroundElement = document.getElementById(dudePos+19); // Get one element ahead
-    //console.log("Är det en Box framför? : " + playgroundElement.classList.contains("B"));
-    
-    if (playgroundElement.classList.contains("B"))
-    {
-        playgroundElement = document.getElementById(dudePos+38); // Get two element ahead
-        //console.log("Är det Box? : " + playgroundElement.classList.contains("B"));
-        if (!(playgroundElement.classList.contains("W") || playgroundElement.classList.contains("B")))
-        {
-            //ok, Box but no Wall or other Box - continue to move
-            playgroundElement.classList.add("B");
-            playgroundElement = document.getElementById(dudePos+19);
-            playgroundElement.classList.remove("B");
-            playgroundElement.classList.add("P");
-            playgroundElement = document.getElementById(dudePos);
-            playgroundElement.classList.remove("P");
-        }
-    }else{console.log("Entered moveDown");
-    let playgroundElement = document.getElementById(dudePos); // Get dudes div
-    playgroundElement.classList.remove("P");
-    playgroundElement = document.getElementById(dudePos+19); // Set dude new P
-    playgroundElement.classList.add("P");
-    }
-}
-
-
-function moveRight(dudePos){
-    console.log("Entered moveRight");
-    let playgroundElement = document.getElementById(dudePos+1); // Get one element ahead
-    //console.log("Är det en Box framför? : " + playgroundElement.classList.contains("B"));
-    
-    if (playgroundElement.classList.contains("B"))
-    {
-        playgroundElement = document.getElementById(dudePos+2); // Get two element ahead
-        //console.log("Är det Box? : " + playgroundElement.classList.contains("B"));
-        if (!(playgroundElement.classList.contains("W") || playgroundElement.classList.contains("B")))
-        {
-            //ok, Box but no Wall or other Box - continue to move
-            playgroundElement.classList.add("B");
-            playgroundElement = document.getElementById(dudePos+1);
-            playgroundElement.classList.remove("B");
-            playgroundElement.classList.add("P");
-            playgroundElement = document.getElementById(dudePos);
-            playgroundElement.classList.remove("P");
-        }
-    }else{let playgroundElement = document.getElementById(dudePos); // Get dudes div
-    playgroundElement.classList.remove("P");
-    playgroundElement = document.getElementById(dudePos+1); // Set dude new P
-    playgroundElement.classList.add("P");
-    }
-}
-
-function moveLeft(dudePos){
-    console.log("Entered moveLeft");
-    let playgroundElement = document.getElementById(dudePos-1); // Get one element ahead
-    //console.log("Är det en Box framför? : " + playgroundElement.classList.contains("B"));
-    
-    if (playgroundElement.classList.contains("B"))
-    {
-        playgroundElement = document.getElementById(dudePos-2); // Get two element ahead
-        //console.log("Är det Box? : " + playgroundElement.classList.contains("B"));
-        if (!(playgroundElement.classList.contains("W") || playgroundElement.classList.contains("B")))
-        {
-            //ok, Box but no Wall or other Box - continue to move
-            playgroundElement.classList.add("B");
-            playgroundElement = document.getElementById(dudePos-1);
-            playgroundElement.classList.remove("B");
-            playgroundElement.classList.add("P");
-            playgroundElement = document.getElementById(dudePos);
-            playgroundElement.classList.remove("P");
-        }
-    }else{
-        let playgroundElement = document.getElementById(dudePos); // Get dudes div
-        playgroundElement.classList.remove("P");
-        playgroundElement = document.getElementById(dudePos-1); // Set dude new P
-        playgroundElement.classList.add("P");
-    }
-    
 }
 
 function keyPressed(event)
@@ -205,8 +94,7 @@ function keyPressed(event)
     let DudePos = findDudeId();  // Looks for <div id> for player
     //console.log("KeyPress: FindDude: " + DudePos); // startPos: 220 = 19*11+11 (row 19, col 11)
     var playgroundElement = document.getElementById(0);
-    
-    
+    let gameField = tileMap01;  // Later game patch: get the game field from player select
     switch (event.key)
     {
         case "ArrowUp":
@@ -216,7 +104,7 @@ function keyPressed(event)
             // Move if not hit wall or Barrel+wall:
             if ( !playgroundElement.classList.contains("W") || playgroundElement.classList.contains("B"))
             {
-                moveUp(DudePos);   // ska vi passa in parametrar så att vi inte upprepar oss???
+                movePlayer(DudePos,-19);
             }
             break;
             
@@ -227,7 +115,7 @@ function keyPressed(event)
             // Move if not hit wall or Barrel+wall:
             if ( !playgroundElement.classList.contains("W") || playgroundElement.classList.contains("B"))
             {
-                moveDown(DudePos);            
+                movePlayer(DudePos,19);
             }
             break;
             
@@ -238,9 +126,8 @@ function keyPressed(event)
             // Move if not hit wall or Barrel+wall:
             if ( !playgroundElement.classList.contains("W") || playgroundElement.classList.contains("B"))
             {
-                moveLeft(DudePos);
+                movePlayer(DudePos,-1);
             }
-            
             break;
             
         case "ArrowRight":
@@ -250,7 +137,7 @@ function keyPressed(event)
             // Move if not hit wall or Barrel+wall:
             if ( !playgroundElement.classList.contains("W") || playgroundElement.classList.contains("B"))
             {
-                moveRight(DudePos);                
+                movePlayer(DudePos,1);
             }
             break;
     }
@@ -259,14 +146,18 @@ function keyPressed(event)
     console.log("Check for Win!" );
     let winCount = 0;
     
-    for (let id=0; id<(tileMap01.height*tileMap01.width); id++){
+    for (let id=0; id<(gameField.height*gameField.width); id++){
         playgroundElement = document.getElementById(String(id)); //fetch the new element
         if (playgroundElement.classList.contains("B") && playgroundElement.classList.contains("G")) winCount++;
     }
-    if (tileMap01.blocks == winCount)
+    if (gameField.blocks == winCount)
     {
+        gameDone = true;
         console.log("SOMEONE WON THE GAME");
-        document.getElementById("win").innerHTML = "SOMEONE WON THE GAME";
+        document.getElementById("win").innerHTML = "SOMEONE WON THE GAME! In " + keyInputs + " moves.";
+    } else {
+        // La till antal steg som spelaren gjort.
+        document.getElementById("win").innerHTML = "Moves: " + keyInputs;
     }
     
 }
