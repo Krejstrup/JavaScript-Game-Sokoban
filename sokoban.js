@@ -10,39 +10,50 @@ function startUp(){
     // predefined: gameField = tileMap01 - In later game patch: get the game field from a player select
     const playgroundElement = document.getElementById("playGround");
     let marker = " ";
-    // Id = "gameField" to be able to find an game element faster.
-    let idTag = 0;
-    
+    let floorMarker = "N";
+    let idTag = 0; // Use CSS id to be able to find an game element faster.
+
     for (let i=0; i<gameField.height; i++){
         for (let j=0; j<gameField.width; j++){
             
-            marker = gameField.mapGrid[i][j];
-            //console.log(marker);
+            marker = gameField.mapGrid[i][j]; // Fetch gamedata
             let newDivBox = document.createElement("div");
-            newDivBox.classList.add("box");
+            newDivBox.classList.add("box");   // All are boxes
+
             if (marker == " "){
-                marker = "N";    // this is a floor tile
-                newDivBox.classList.add(marker);
+                newDivBox.classList.add(floorMarker); // this is a floor tile
+
             } else if (marker == "B") {
-                marker = "N";   // this is a moving element (B) over floor
+                newDivBox.classList.add(floorMarker); // this is a moving element (B) over floor
+                marker = "B";
+                newDivBox.classList.add(marker);
+
+            } else if (marker == "GB"){
+                marker = "G";
                 newDivBox.classList.add(marker);
                 marker = "B";
                 newDivBox.classList.add(marker);
+
             } else if (marker == "P") {
-                marker = "N";
-                newDivBox.classList.add(marker);
+                newDivBox.classList.add(floorMarker);
                 marker = "P";   // this is a moving player (P) element over floor
                 newDivBox.classList.add(marker);
                 playerPos = idTag;  // idTag for this gamer element will be saved here
+
             } else{
+                // This is the other tiles
                 newDivBox.classList.add(marker);
             }
             newDivBox.setAttribute("id", idTag++);
             playgroundElement.appendChild(newDivBox);
         } 
     }
+    gameDone = false;
+    keyInputs = 0;
 }
-
+function SelGame(game){
+    console.log("This is game. Selected: " +game);
+}
 function movePlayer(dudePos,nextPos)    // tex Player start pos and up: (220,-19)
 {
     let playgroundElement = document.getElementById(dudePos+nextPos); // Get one element ahead
@@ -78,32 +89,30 @@ function movePlayer(dudePos,nextPos)    // tex Player start pos and up: (220,-19
 function keyPressed(event)
 {
     event.preventDefault();
-    //console.log(event);     // Visa eventet - vi är nyfikna!
     let DudePos = playerPos; // findDudeId();  // Looks for <div id> for player
-    //console.log("KeyPress: FindDude: " + DudePos); // startPos: 220 = 19*11+11 (row 19, col 11)
     var playgroundElement = document.getElementById(0);
-    let gameField = tileMap01;  // Later game patch: get the game field from player select
+    //let gameField = tileMap01;  // Later game patch: get the game field from player select
     switch (event.key)
     {
         case "ArrowUp":
             //console.log("Entered ArrowUp");
-            playgroundElement = document.getElementById(DudePos-19); //look for one step up
+            playgroundElement = document.getElementById(DudePos-gameField.width); //look for one step up
             
             // Move if not hit wall or Barrel+wall:
             if ( !playgroundElement.classList.contains("W") || playgroundElement.classList.contains("B"))
             {
-                movePlayer(DudePos,-19);
+                movePlayer(DudePos,-gameField.width);
             }
             break;
             
         case "ArrowDown":
             //console.log("Entered ArrowDown");
-            playgroundElement = document.getElementById(DudePos+19); //look for one step down
+            playgroundElement = document.getElementById(DudePos+gameField.width); //look for one step down
             
             // Move if not hit wall or Barrel+wall:
             if ( !playgroundElement.classList.contains("W") || playgroundElement.classList.contains("B"))
             {
-                movePlayer(DudePos,19);
+                movePlayer(DudePos,gameField.width);
             }
             break;
             
@@ -131,21 +140,22 @@ function keyPressed(event)
     }
 
     // CHECK FOR WINNER WINNER CHICKEN DINNER
-    console.log("Check for Win!" );
-    let winCount = 0;
-    
-    for (let id=0; id<(gameField.height*gameField.width); id++){
-        playgroundElement = document.getElementById(String(id)); //fetch the new element
-        if (playgroundElement.classList.contains("B") && playgroundElement.classList.contains("G")) winCount++;
-    }
-    if (gameField.blocks == winCount)
-    {
-        gameDone = true;
-        console.log("SOMEONE WON THE GAME");
-        document.getElementById("win").innerHTML = "SOMEONE WON THE GAME! In " + keyInputs + " moves.";
-    } else {
-        // La till antal steg som spelaren gjort.
-        document.getElementById("win").innerHTML = "Moves: " + keyInputs;
+    if (!gameDone){
+        let winCount = 0;
+
+        for (let id=0; id<(gameField.height*gameField.width); id++){
+            playgroundElement = document.getElementById(String(id)); //fetch the new element
+            if (playgroundElement.classList.contains("B") && playgroundElement.classList.contains("G")) winCount++;
+        }
+        if (gameField.blocks == winCount)
+        {
+            gameDone = true;
+            console.log("SOMEONE WON THE GAME");
+            document.getElementById("win").innerHTML = "SOMEONE WON THE GAME! In " + keyInputs + " moves.";
+        } else {
+            // La till antal steg som spelaren gjort.
+            document.getElementById("win").innerHTML = "Moves: " + keyInputs;
+        }
     }
     
 }
