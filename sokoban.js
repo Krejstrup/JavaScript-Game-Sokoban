@@ -40,13 +40,13 @@ function startUp(){
     }
     //========= Now we are ready to (re-)draw the map
     drawMap(playgroundElement, gameField);
+    document.getElementById("win").innerHTML = "Use arrow keys to play";
     
     // Prepping that the game is not finished/won yet
     gameDone = false;
     // Resetting the number of game movements (the variable is named wrong!!)
     keyInputs = 0;
 }
-
 
 function drawMap(gameMapParent, mapData)  // to use in later update of the game - select between different game tables.
 {
@@ -195,5 +195,4 @@ function keyPressed(event)
             document.getElementById("win").innerHTML = "Moves: " + keyInputs;
         }
     }
-    
 }
